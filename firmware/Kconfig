@@ -1,0 +1,5 @@
+# openMatterSmartLock — top-level Kconfig
+
+mainmenu "openMatterSmartLock"
+
+source "Kconfig.zephyr"
