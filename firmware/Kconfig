@@ -3,3 +3,5 @@
 mainmenu "openMatterSmartLock"
 
 source "Kconfig.zephyr"
+
+# wip: tinkering with deep-sleep tunables
