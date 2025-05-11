@@ -6,6 +6,7 @@ project(openMatterSmartLock VERSION 0.0.1 LANGUAGES C CXX)
 
 target_sources(app PRIVATE
     app/main.cpp
+    app/runtime.cpp
 )
 
 target_include_directories(app PRIVATE app)
