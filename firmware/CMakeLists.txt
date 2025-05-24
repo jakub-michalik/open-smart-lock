@@ -34,3 +34,7 @@ target_sources(app PRIVATE
 
 # Configure the Matter data model (Door Lock cluster + dependents).
 ncs_configure_data_model()
+
+target_sources(app PRIVATE
+    app/matter/zcl_callbacks.cpp
+)
