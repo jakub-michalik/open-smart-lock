@@ -4,8 +4,10 @@ A Matter Door Lock reference implementation on Zephyr and nRF Connect SDK.
 
 ## Status
 
-Scaffolding complete. Console: nRF52840 DK. Builds clean (debug + release).
-Next: integrate Matter / CHIP stack.
+- Build system: working on nRF52840 DK (debug + release).
+- Matter: device joins fabric, commissioning verified with chip-tool.
+- Door Lock cluster: scaffolding in place, commands routed (NOPs).
+- Next: Bolt state machine.
 
 ## Build
 
