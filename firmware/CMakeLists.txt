@@ -38,3 +38,7 @@ ncs_configure_data_model()
 target_sources(app PRIVATE
     app/matter/zcl_callbacks.cpp
 )
+
+target_sources(app PRIVATE
+    app/lock/bolt.cpp
+)
