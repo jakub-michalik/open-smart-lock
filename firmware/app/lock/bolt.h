@@ -14,7 +14,11 @@ namespace omsl {
 enum class LockState : uint8_t {
     Unlocked = 0,
     Locked = 1,
-    Unknown = 2,
+    UnlockingInitiated = 2,
+    UnlockingCompleted = 3,
+    LockingInitiated = 4,
+    LockingCompleted = 5,
+    Unknown = 6,
 };
 
 enum class LockOperation : uint8_t {
@@ -22,11 +26,14 @@ enum class LockOperation : uint8_t {
     Unlock,
 };
 
+using LockStateChangedCallback = std::function<void(LockState)>;
+
 class Bolt {
 public:
     static Bolt & Instance();
 
     void Init();
+    void SetStateChangedCallback(LockStateChangedCallback cb);
 
     bool Lock();
     bool Unlock();
@@ -36,7 +43,10 @@ public:
 private:
     Bolt() = default;
 
+    void TransitionTo(LockState newState);
+
     LockState mState { LockState::Unknown };
+    LockStateChangedCallback mCallback;
 };
 
 }  // namespace omsl

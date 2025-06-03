@@ -24,17 +24,39 @@ void Bolt::Init()
     LOG_INF("Bolt: init");
 }
 
+void Bolt::SetStateChangedCallback(LockStateChangedCallback cb)
+{
+    mCallback = std::move(cb);
+}
+
+void Bolt::TransitionTo(LockState newState)
+{
+    mState = newState;
+    if (mCallback) {
+        mCallback(newState);
+    }
+}
+
 bool Bolt::Lock()
 {
-    LOG_INF("Bolt: Lock");
-    mState = LockState::Locked;
+    if (mState == LockState::Locked || mState == LockState::LockingInitiated) {
+        return false;
+    }
+    TransitionTo(LockState::LockingInitiated);
+    // TODO: drive servo, then complete
+    TransitionTo(LockState::LockingCompleted);
+    TransitionTo(LockState::Locked);
     return true;
 }
 
 bool Bolt::Unlock()
 {
-    LOG_INF("Bolt: Unlock");
-    mState = LockState::Unlocked;
+    if (mState == LockState::Unlocked || mState == LockState::UnlockingInitiated) {
+        return false;
+    }
+    TransitionTo(LockState::UnlockingInitiated);
+    TransitionTo(LockState::UnlockingCompleted);
+    TransitionTo(LockState::Unlocked);
     return true;
 }
 
