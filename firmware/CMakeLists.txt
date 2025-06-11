@@ -42,3 +42,7 @@ target_sources(app PRIVATE
 target_sources(app PRIVATE
     app/lock/bolt.cpp
 )
+
+target_sources(app PRIVATE
+    app/servo_controller.cpp
+)
