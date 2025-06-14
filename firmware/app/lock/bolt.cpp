@@ -5,12 +5,15 @@
  */
 
 #include "bolt.h"
+#include "../servo_controller.h"
 
 #include <zephyr/logging/log.h>
 
 LOG_MODULE_DECLARE(omsl);
 
 namespace omsl {
+
+static ServoController sServo;
 
 Bolt & Bolt::Instance()
 {
@@ -21,6 +24,7 @@ Bolt & Bolt::Instance()
 void Bolt::Init()
 {
     mState = LockState::Unknown;
+    sServo.Init();
     LOG_INF("Bolt: init");
 }
 
@@ -43,7 +47,9 @@ bool Bolt::Lock()
         return false;
     }
     TransitionTo(LockState::LockingInitiated);
-    // TODO: drive servo, then complete
+    if (!sServo.MoveTo(1)) {
+        return false;
+    }
     TransitionTo(LockState::LockingCompleted);
     TransitionTo(LockState::Locked);
     return true;
@@ -55,6 +61,9 @@ bool Bolt::Unlock()
         return false;
     }
     TransitionTo(LockState::UnlockingInitiated);
+    if (!sServo.MoveTo(0)) {
+        return false;
+    }
     TransitionTo(LockState::UnlockingCompleted);
     TransitionTo(LockState::Unlocked);
     return true;
