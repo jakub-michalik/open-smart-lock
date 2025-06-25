@@ -3,3 +3,7 @@
 mainmenu "openMatterSmartLock"
 
 source "Kconfig.zephyr"
+
+config OMSL_SERVO_TIMEOUT_MS
+    int "Servo actuation timeout (ms)"
+    default 1500
