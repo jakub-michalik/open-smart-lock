@@ -46,3 +46,7 @@ target_sources(app PRIVATE
 target_sources(app PRIVATE
     app/servo_controller.cpp
 )
+
+target_sources(app PRIVATE
+    app/adc_manager.cpp
+)
