@@ -18,6 +18,11 @@ public:
 
 private:
     Runtime() = default;
+
+    void StartHeartbeat();
+    static void HeartbeatHandler(struct k_work * work);
+
+    struct k_work_delayable mHeartbeat;
 };
 
 }  // namespace omsl
