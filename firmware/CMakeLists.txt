@@ -50,3 +50,11 @@ target_sources(app PRIVATE
 target_sources(app PRIVATE
     app/adc_manager.cpp
 )
+
+target_sources(app PRIVATE
+    app/access/types.cpp
+    app/access/roster.cpp
+    app/access/users.cpp
+    app/access/credentials.cpp
+    app/access/vault.cpp
+)
