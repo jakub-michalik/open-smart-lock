@@ -58,3 +58,12 @@ constexpr uint32_t kServoUnlockedPulseUs = 2000;
 constexpr uint32_t kServoActuationTimeoutMs = 1500;
 
 }  // namespace omsl
+
+namespace omsl {
+
+// PIN validation hook — used when RequirePINforRemoteOperation is set on
+// the Door Lock cluster. Returns true if the PIN is valid for some
+// active user.
+bool ValidateRemotePin(const uint8_t * pin, uint8_t length);
+
+}  // namespace omsl

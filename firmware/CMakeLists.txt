@@ -58,3 +58,7 @@ target_sources(app PRIVATE
     app/access/credentials.cpp
     app/access/vault.cpp
 )
+
+target_sources(app PRIVATE
+    app/lock/pin.cpp
+)
