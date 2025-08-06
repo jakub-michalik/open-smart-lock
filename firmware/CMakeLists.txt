@@ -62,3 +62,7 @@ target_sources(app PRIVATE
 target_sources(app PRIVATE
     app/lock/pin.cpp
 )
+
+target_sources(app PRIVATE
+    app/access/schedules.cpp
+)
