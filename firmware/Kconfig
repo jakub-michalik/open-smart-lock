@@ -7,3 +7,11 @@ source "Kconfig.zephyr"
 config OMSL_SERVO_TIMEOUT_MS
     int "Servo actuation timeout (ms)"
     default 1500
+
+config LOCK_SCHEDULES
+    bool "Support user week-day and year-day schedules"
+    default n
+    help
+      Enables the optional Door Lock schedules surface (week-day,
+      year-day, holiday schedules). When disabled, the schedules
+      roster source file is excluded from the build.

@@ -1,0 +1,8 @@
+# Copyright (c) 2025 openMatterSmartLock contributors
+# SPDX-License-Identifier: Apache-2.0
+#
+# Zephyr snippet to enable Door Lock schedules at build time:
+#   west build ... --snippet schedules
+name: schedules
+append:
+  EXTRA_CONF_FILE: schedules.conf
