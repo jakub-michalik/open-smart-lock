@@ -36,3 +36,5 @@ void Roster::FactoryReset()
 }
 
 }  // namespace omsl::access
+
+// Factory reset hook integrated with system factory-reset event
