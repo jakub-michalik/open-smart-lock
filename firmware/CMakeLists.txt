@@ -66,3 +66,7 @@ target_sources(app PRIVATE
 target_sources(app PRIVATE
     app/access/schedules.cpp
 )
+
+target_sources(app PRIVATE
+    app/ui/console.cpp
+)
