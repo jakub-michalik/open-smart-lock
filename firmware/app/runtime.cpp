@@ -9,6 +9,7 @@
 #include <zephyr/logging/log.h>
 
 #include "adc_manager.h"
+#include "ui/console.h"
 #include "lock/bolt.h"
 
 LOG_MODULE_DECLARE(omsl);
@@ -31,6 +32,16 @@ int Runtime::StartApp()
 
     Bolt::Instance().Init();
     sAdc.Init();
+    ui::Console::Instance().Init();
+
+    ui::Console::Instance().SetActionButtonCallback([]() {
+        auto & lm = Bolt::Instance();
+        if (lm.State() == LockState::Locked) {
+            lm.Unlock();
+        } else {
+            lm.Lock();
+        }
+    });
 
     k_work_init_delayable(&mHeartbeat, HeartbeatHandler);
     StartHeartbeat();
