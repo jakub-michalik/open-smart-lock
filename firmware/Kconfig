@@ -15,3 +15,7 @@ config LOCK_SCHEDULES
       Enables the optional Door Lock schedules surface (week-day,
       year-day, holiday schedules). When disabled, the schedules
       roster source file is excluded from the build.
+
+config OMSL_HEARTBEAT_INTERVAL_MS
+    int "Heartbeat interval (ms)"
+    default 5000
