@@ -70,3 +70,6 @@ bool Bolt::Unlock()
 }
 
 }  // namespace omsl
+
+// Future: dispatch motion via Nrf::PostTask so Runtime and Matter stack
+// see consistent state ordering.
