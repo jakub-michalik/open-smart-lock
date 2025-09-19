@@ -1,0 +1,6 @@
+config OMSL_ACTUATOR_SERVO_PWM
+    bool "PWM servo actuator driver"
+    default y
+    help
+      Reference actuator driver using a Zephyr PWM device bound to the
+      'servo_pwm' devicetree node.
