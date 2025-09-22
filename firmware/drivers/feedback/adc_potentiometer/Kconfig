@@ -1,0 +1,6 @@
+config OMSL_FEEDBACK_ADC_POTENTIOMETER
+    bool "ADC potentiometer feedback driver"
+    default y
+    help
+      Reference feedback driver using Zephyr ADC for battery voltage
+      and optional actuator position sampling.
