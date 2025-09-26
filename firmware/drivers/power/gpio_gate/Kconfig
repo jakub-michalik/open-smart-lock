@@ -1,0 +1,3 @@
+config OMSL_POWER_GPIO_GATE
+    bool "GPIO-controlled power gate driver"
+    default y
