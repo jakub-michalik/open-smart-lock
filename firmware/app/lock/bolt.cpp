@@ -5,7 +5,6 @@
  */
 
 #include "bolt.h"
-#include "../servo_controller.h"
 
 #include <zephyr/logging/log.h>
 
@@ -13,19 +12,20 @@ LOG_MODULE_DECLARE(omsl);
 
 namespace omsl {
 
-static ServoController sServo;
-
 Bolt & Bolt::Instance()
 {
     static Bolt inst;
     return inst;
 }
 
-void Bolt::Init()
+void Bolt::Init(hal::IActuator * actuator)
 {
+    mActuator = actuator;
     mState = LockState::Unknown;
-    sServo.Init();
-    LOG_INF("Bolt: init");
+    if (mActuator) {
+        mActuator->Init();
+    }
+    LOG_INF("Bolt: init (actuator=%s)", actuator ? "set" : "null");
 }
 
 void Bolt::SetStateChangedCallback(LockStateChangedCallback cb)
@@ -41,35 +41,39 @@ void Bolt::TransitionTo(LockState newState)
     }
 }
 
+void Bolt::OnActuatorComplete(hal::ActuatorResult result, LockState completed_state, LockState final_state)
+{
+    if (result == hal::ActuatorResult::Success) {
+        TransitionTo(completed_state);
+        TransitionTo(final_state);
+    } else {
+        LOG_WRN("Actuator failed (%u)", static_cast<unsigned>(result));
+        TransitionTo(LockState::Unknown);
+    }
+}
+
 bool Bolt::Lock()
 {
-    if (mState == LockState::Locked || mState == LockState::LockingInitiated) {
-        return false;
-    }
+    if (!mActuator) return false;
+    if (mState == LockState::Locked || mState == LockState::LockingInitiated) return false;
+
     TransitionTo(LockState::LockingInitiated);
-    if (!sServo.MoveTo(1)) {
-        return false;
-    }
-    TransitionTo(LockState::LockingCompleted);
-    TransitionTo(LockState::Locked);
-    return true;
+    return mActuator->MoveTo(hal::ActuatorTarget::Locked,
+        [this](hal::ActuatorResult r) {
+            OnActuatorComplete(r, LockState::LockingCompleted, LockState::Locked);
+        });
 }
 
 bool Bolt::Unlock()
 {
-    if (mState == LockState::Unlocked || mState == LockState::UnlockingInitiated) {
-        return false;
-    }
+    if (!mActuator) return false;
+    if (mState == LockState::Unlocked || mState == LockState::UnlockingInitiated) return false;
+
     TransitionTo(LockState::UnlockingInitiated);
-    if (!sServo.MoveTo(0)) {
-        return false;
-    }
-    TransitionTo(LockState::UnlockingCompleted);
-    TransitionTo(LockState::Unlocked);
-    return true;
+    return mActuator->MoveTo(hal::ActuatorTarget::Unlocked,
+        [this](hal::ActuatorResult r) {
+            OnActuatorComplete(r, LockState::UnlockingCompleted, LockState::Unlocked);
+        });
 }
 
 }  // namespace omsl
-
-// Future: dispatch motion via Nrf::PostTask so Runtime and Matter stack
-// see consistent state ordering.

@@ -9,6 +9,8 @@
 #include <cstdint>
 #include <functional>
 
+#include "../hal/actuator.h"
+
 namespace omsl {
 
 enum class LockState : uint8_t {
@@ -21,18 +23,13 @@ enum class LockState : uint8_t {
     Unknown = 6,
 };
 
-enum class LockOperation : uint8_t {
-    Lock,
-    Unlock,
-};
-
 using LockStateChangedCallback = std::function<void(LockState)>;
 
 class Bolt {
 public:
     static Bolt & Instance();
 
-    void Init();
+    void Init(hal::IActuator * actuator);
     void SetStateChangedCallback(LockStateChangedCallback cb);
 
     bool Lock();
@@ -44,26 +41,18 @@ private:
     Bolt() = default;
 
     void TransitionTo(LockState newState);
+    void OnActuatorComplete(hal::ActuatorResult result, LockState success_state, LockState completed_state);
 
     LockState mState { LockState::Unknown };
     LockStateChangedCallback mCallback;
+    hal::IActuator * mActuator { nullptr };
 };
 
-}  // namespace omsl
-
-namespace omsl {
+// PIN validation hook
+bool ValidateRemotePin(const uint8_t * pin, uint8_t length);
 
 constexpr uint32_t kServoLockedPulseUs = 1000;
 constexpr uint32_t kServoUnlockedPulseUs = 2000;
 constexpr uint32_t kServoActuationTimeoutMs = 1500;
-
-}  // namespace omsl
-
-namespace omsl {
-
-// PIN validation hook — used when RequirePINforRemoteOperation is set on
-// the Door Lock cluster. Returns true if the PIN is valid for some
-// active user.
-bool ValidateRemotePin(const uint8_t * pin, uint8_t length);
 
 }  // namespace omsl
