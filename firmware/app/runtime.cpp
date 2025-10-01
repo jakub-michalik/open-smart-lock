@@ -8,17 +8,22 @@
 
 #include <zephyr/logging/log.h>
 
-#include "adc_manager.h"
 #include "ui/console.h"
+#include "hal/feedback.h"
 #include "lock/bolt.h"
+
+#if defined(CONFIG_OMSL_ACTUATOR_SERVO_PWM)
+#include "../drivers/actuator/servo_pwm/servo_pwm_driver.h"
+#endif
+#if defined(CONFIG_OMSL_FEEDBACK_ADC_POTENTIOMETER)
+#include "../drivers/feedback/adc_potentiometer/adc_potentiometer_driver.h"
+#endif
 
 LOG_MODULE_DECLARE(omsl);
 
 namespace omsl {
 
 constexpr int32_t kHeartbeatIntervalMs = 5000;
-
-static AdcManager sAdc;
 
 Runtime & Runtime::Instance()
 {
@@ -30,19 +35,27 @@ int Runtime::StartApp()
 {
     LOG_INF("Runtime::StartApp");
 
-    Bolt::Instance().Init();
-    sAdc.Init();
+    hal::IActuator * actuator = nullptr;
+    hal::IFeedback * feedback = nullptr;
+
+#if defined(CONFIG_OMSL_ACTUATOR_SERVO_PWM)
+    actuator = &drivers::ServoPwmActuator::Instance();
+#endif
+#if defined(CONFIG_OMSL_FEEDBACK_ADC_POTENTIOMETER)
+    feedback = &drivers::AdcFeedback::Instance();
+    feedback->Init();
+#endif
+
+    Bolt::Instance().Init(actuator);
     ui::Console::Instance().Init();
 
     ui::Console::Instance().SetActionButtonCallback([]() {
         auto & lm = Bolt::Instance();
-        if (lm.State() == LockState::Locked) {
-            lm.Unlock();
-        } else {
-            lm.Lock();
-        }
+        if (lm.State() == LockState::Locked) lm.Unlock();
+        else lm.Lock();
     });
 
+    mFeedback = feedback;
     k_work_init_delayable(&mHeartbeat, HeartbeatHandler);
     StartHeartbeat();
 
@@ -59,8 +72,11 @@ void Runtime::StartHeartbeat()
 
 void Runtime::HeartbeatHandler(struct k_work * work)
 {
-    int32_t mv = sAdc.SampleBatteryMillivolts();
-    LOG_INF("Heartbeat: battery=%d mV", mv);
+    auto * fb = Instance().mFeedback;
+    if (fb) {
+        auto s = fb->Sample(hal::FeedbackChannel::BatteryVoltage);
+        LOG_INF("Heartbeat: battery=%d mV (valid=%d)", s.value_millivolts, s.valid);
+    }
     k_work_schedule(&Instance().mHeartbeat, K_MSEC(kHeartbeatIntervalMs));
 }
 
