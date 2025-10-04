@@ -2,20 +2,30 @@
 
 mainmenu "openMatterSmartLock"
 
-source "Kconfig.zephyr"
+menu "Actuator driver"
+
+rsource "drivers/actuator/servo_pwm/Kconfig"
+
+endmenu
+
+menu "Feedback driver"
+
+rsource "drivers/feedback/adc_potentiometer/Kconfig"
+
+endmenu
+
+menu "Power gate driver"
+
+rsource "drivers/power/gpio_gate/Kconfig"
+
+endmenu
+
+config OMSL_HEARTBEAT_INTERVAL_MS
+    int "Heartbeat interval (ms)"
+    default 5000
 
 config OMSL_SERVO_TIMEOUT_MS
     int "Servo actuation timeout (ms)"
     default 1500
 
-config LOCK_SCHEDULES
-    bool "Support user week-day and year-day schedules"
-    default n
-    help
-      Enables the optional Door Lock schedules surface (week-day,
-      year-day, holiday schedules). When disabled, the schedules
-      roster source file is excluded from the build.
-
-config OMSL_HEARTBEAT_INTERVAL_MS
-    int "Heartbeat interval (ms)"
-    default 5000
+source "Kconfig.zephyr"
