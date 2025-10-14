@@ -53,3 +53,6 @@ add_subdirectory(drivers/power/gpio_gate)
 target_compile_options(matter-data-model PRIVATE -Wno-error=maybe-uninitialized)
 
 ncs_configure_data_model()
+
+# All driver source files are added by driver subdirs above; nothing here
+# should include drivers/* directly.
