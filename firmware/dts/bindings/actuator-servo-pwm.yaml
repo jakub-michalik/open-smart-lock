@@ -1,0 +1,32 @@
+# Copyright (c) 2025 openMatterSmartLock contributors
+# SPDX-License-Identifier: Apache-2.0
+
+description: |
+  PWM servo actuator binding for openMatterSmartLock. Declares the PWM
+  channel driving the servo and an optional enable-gpios line for
+  power-gating the servo rail when idle.
+
+compatible: "omsl,actuator-servo-pwm"
+
+properties:
+  pwms:
+    type: phandle-array
+    required: true
+    description: PWM channel driving the servo signal line.
+
+  enable-gpios:
+    type: phandle-array
+    required: false
+    description: Optional GPIO controlling the servo power rail.
+
+  locked-pulse-us:
+    type: int
+    required: false
+    default: 1000
+    description: PWM pulse width (microseconds) corresponding to the locked position.
+
+  unlocked-pulse-us:
+    type: int
+    required: false
+    default: 2000
+    description: PWM pulse width (microseconds) corresponding to the unlocked position.
