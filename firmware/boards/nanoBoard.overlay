@@ -1,0 +1,15 @@
+/ {
+    aliases {
+        led-status = &led0;
+        sw-action = &button0;
+    };
+
+    servo_pwm: servo_pwm {
+        compatible = "omsl,actuator-servo-pwm";
+        pwms = <&pwm0 0 PWM_USEC(20000) PWM_POLARITY_NORMAL>;
+    };
+};
+
+&pwm0 {
+    status = "okay";
+};
