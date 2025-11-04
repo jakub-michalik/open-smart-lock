@@ -1,0 +1,7 @@
+common:
+  platform_allow: native_sim
+  tags: omsl unit
+
+tests:
+  omsl.unit.bolt: {}
+  omsl.unit.roster: {}
