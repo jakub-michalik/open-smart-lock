@@ -13,3 +13,8 @@ tests:
     integration_platforms:
       - nanoBoard
     tags: matter door-lock
+  sample.omsl.nanoBoard:
+    platform_allow: nanoBoard
+    integration_platforms:
+      - nanoBoard
+    tags: matter door-lock
