@@ -29,3 +29,23 @@ config OMSL_SERVO_TIMEOUT_MS
     default 1500
 
 source "Kconfig.zephyr"
+
+menu "Memory tuning (advanced)"
+
+config OMSL_HEAP_HEADROOM_PCT
+    int "Reserved heap headroom percentage"
+    default 15
+    help
+      Percentage of CONFIG_HEAP_MEM_POOL_SIZE that the application
+      reserves as headroom for transient allocations. Used by the
+      memory monitor in debug builds to flag pressure on the heap.
+
+config OMSL_LOG_HEARTBEAT_STACKS
+    bool "Log stack high-water marks on each heartbeat"
+    default y if DEBUG
+    default n
+    help
+      When set, the heartbeat task logs the high-water mark of every
+      named Zephyr thread. Useful during memory tuning; off in release.
+
+endmenu
