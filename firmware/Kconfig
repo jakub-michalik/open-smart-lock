@@ -49,3 +49,7 @@ config OMSL_LOG_HEARTBEAT_STACKS
       named Zephyr thread. Useful during memory tuning; off in release.
 
 endmenu
+
+config OMSL_FACTORY_RESET_HOLD_TIME_MS
+    int "Hold time on action button for factory reset (ms)"
+    default 10000
