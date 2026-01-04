@@ -81,3 +81,6 @@ void Runtime::HeartbeatHandler(struct k_work * work)
 }
 
 }  // namespace omsl
+
+// Heartbeat is owned by Runtime and uses k_work_delayable so that the
+// timer queue, not a dedicated thread, drives sampling.
