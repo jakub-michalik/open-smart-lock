@@ -228,3 +228,27 @@ Lock operations are modeled as `Initiated → Completed` rather than as immediat
 ### ADR-6 — Standard Matter Door Lock cluster, no manufacturer-specific deviations
 
 The protocol surface is pure Matter Door Lock. The device commissions and behaves as a first-class Matter Door Lock in any ecosystem. No manufacturer-specific clusters are required for basic operation. Implementations that need product-specific configuration are expected to layer those on top in a downstream repository, not in openMatterSmartLock itself.
+
+
+## 14. Memory model (summary)
+
+See [`docs/memory-model.md`](docs/memory-model.md) for the full document.
+The condensed rules:
+
+- Static allocation by default; module singletons in `.bss`.
+- No heap from domain code. Heap is reserved for Matter / BLE / Thread
+  stacks.
+- Per-thread stacks sized against measured high-water marks, not
+  guessed.
+- No C++ exceptions, no RTTI.
+- Snapshot-based persistence; access records live in RAM and flush on
+  explicit save points.
+
+### ADR-7 — Static-allocation policy for domain layer
+
+Domain-layer code (lock state machine, access manager, drivers) must
+not call into dynamic allocators. All such modules are constructed
+once, in static storage, with first-use initialization. The Matter
+stack is permitted to use the heap pool; the application is not.
+Rationale: deterministic memory footprint, no allocation failures in
+the lock-control path, no fragmentation across multi-year operation.
