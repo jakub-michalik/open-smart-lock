@@ -252,3 +252,10 @@ once, in static storage, with first-use initialization. The Matter
 stack is permitted to use the heap pool; the application is not.
 Rationale: deterministic memory footprint, no allocation failures in
 the lock-control path, no fragmentation across multi-year operation.
+
+
+## 13. Build profiles
+
+- `prj.conf` — debug, full logging, asserts on.
+- `prj_release.conf` — release, minimal logging, asserts off.
+- `prj_radioed.conf` — Thread + Wi-Fi multi-transport variant.
