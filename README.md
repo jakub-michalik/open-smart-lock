@@ -1,22 +1,101 @@
 # openMatterSmartLock
 
-A Matter Door Lock reference implementation on Zephyr and nRF Connect SDK.
+> **An open, hardware-independent Matter Door Lock reference implementation.**
+> Built on Zephyr, the nRF Connect SDK, and the ConnectedHomeIP (Matter) stack.
+> Designed from day one with a clean layered architecture, explicit hardware abstraction interfaces, and multi-board support.
+
+## What this is
+
+openMatterSmartLock is a complete Matter Door Lock firmware that:
+
+- implements the standard **Matter Door Lock cluster**, so the device commissions and behaves as a first-class Matter Door Lock in any ecosystem (Apple Home, Google Home, Home Assistant, SmartThings),
+- runs on **multiple Nordic SoCs** (nRF52840, nRF5340, nRF54L15, nRF54LM20, nRF7002) via Zephyr's devicetree and Kconfig,
+- **does not assume specific actuator hardware**: actuator, feedback, and power-gating are exposed as Hardware Abstraction Layer (HAL) interfaces with selectable driver implementations,
+- supports **Thread, Wi-Fi, and runtime transport switching** on platforms that support it,
+- ships with a **PWM servo driver** as the reference actuator implementation and clear extension points for DC motors, latching solenoids, or stepper drives.
+
+Commissioning is performed through any standard Matter commissioner — Apple Home, Google Home, Home Assistant, SmartThings, or the public Matter sample apps. openMatterSmartLock does not ship its own companion app; the device behaves as a first-class Matter Door Lock and is fully controllable from any compliant ecosystem.
+
+## What this is not
+
+openMatterSmartLock is not a certified smart lock, not a finished consumer product, and not a substitute for proper mechanical and security certification. The implementation is reference quality: clean architecture, documented decisions, working multi-board build, but no compliance claims.
+
+## Architecture at a glance
+
+```text
+┌─────────────────────────────────────────────────────────────┐
+│  Matter ecosystem (Apple Home / Google Home / HA / etc.)    │
+└──────────────────────────┬──────────────────────────────────┘
+                           │  Matter Door Lock cluster over Thread / Wi-Fi
+                           ▼
+┌─────────────────────────────────────────────────────────────┐
+│  Protocol integration: ZCL Door Lock cluster glue           │
+├─────────────────────────────────────────────────────────────┤
+│  Application orchestration (Application)                        │
+│    - lifecycle, event routing, heartbeat                    │
+├─────────────────────────────────────────────────────────────┤
+│  Lock domain (LockController)                              │
+│    - Initiated → Completed state machine                    │
+│    - PIN validation, access delegation                      │
+├─────────────────────────────────────────────────────────────┤
+│  Access and persistence (AccessController + AccessStore)     │
+│    - users, credentials, schedules                          │
+├─────────────────────────────────────────────────────────────┤
+│  Hardware Abstraction Layer (HAL) — pure interfaces         │
+│    - actuator.h, feedback.h, power.h, transport_switch.h    │
+├─────────────────────────────────────────────────────────────┤
+│  HAL drivers (selectable per board)                         │
+│    - servo_pwm / adc_potentiometer / gpio_gate / ...        │
+├─────────────────────────────────────────────────────────────┤
+│  Console support (Zephyr DTS + Kconfig per target)            │
+└─────────────────────────────────────────────────────────────┘
+```
+
+Full details, layer contracts, and architectural decisions are documented in [ARCHITECTURE.md](ARCHITECTURE.md). Adding new boards or new actuator drivers is documented in [PORTING.md](PORTING.md).
+
+## Supported boards (out of the box)
+
+- nRF52840 DK
+- nRF5340 DK (multi-image, optional Thread/Wi-Fi switch)
+- nRF54L15 DK
+- nRF54LM20 DK
+- nRF7002 DK (with optional nRF7001)
+- nanoBoard (community-friendly servo retrofit example)
+
+Adding additional boards is a matter of supplying a Zephyr `<board>.overlay`, `<board>.conf`, and (where partitioning is needed) a `pm_static_<board>.yml`. See [PORTING.md](PORTING.md).
+
+## Getting started
+
+1. Install the **nRF Connect SDK** following Nordic's official setup guide. openMatterSmartLock targets a specific NCS version pinned in [`firmware/west.yml`](firmware/west.yml).
+2. Clone openMatterSmartLock as a Zephyr application.
+3. Build for your board:
+
+   ```bash
+   west build -b nanoBoard -p auto firmware
+   ```
+
+4. Flash and commission. See [`docs/getting-started.md`](docs/getting-started.md) for the full walkthrough.
+
+## Repository layout
+
+```text
+openMatterSmartLock/
+├── firmware/                     # Zephyr / NCS Matter Door Lock application
+│   ├── app/                      # Application code (Matter, lock, access, UX, HAL)
+│   ├── drivers/                  # HAL driver implementations
+│   ├── boards/                   # Per-board overlays and config
+│   ├── dts/bindings/             # Custom devicetree bindings
+│   ├── snippets/                 # Reusable configuration snippets
+│   ├── sysbuild/                 # Sysbuild + MCUboot configuration
+│   └── pm_static_*.yml           # Partition manager configs
+├── docs/                         # Architecture, porting, calibration, commissioning
+└── examples/                     # Concrete reference builds (e.g., nanoBoard retrofit)
+```
 
 ## Status
 
-- Matter Door Lock cluster: working (commission + lock/unlock from chip-tool).
-- Servo PWM actuator: working on nRF52840 DK and nRF5340 DK.
-- Battery sampling: heartbeat every 5 s.
-- Next: users, credentials, persistence.
+**Pre-release / under active development.** API surfaces, HAL interfaces, and module boundaries are still evolving toward a stable v1.0.
 
-## Supported boards
+## License
 
-- nRF52840 DK
-- nRF5340 DK
-
-## Build
-
-```bash
-west build -b nanoBoard -p auto firmware
-west build -b nanoBoard/nrf5340_cpuapp -p auto firmware
-```
+Apache License 2.0. See [LICENSE](LICENSE) and [NOTICE](NOTICE).
