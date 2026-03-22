@@ -15,7 +15,7 @@ A "board" in openMatterSmartLock terms is any combination of SoC + reference dev
 ### 1.2. Steps
 
 1. **Create a board overlay** at `firmware/boards/<board_name>.overlay`. Bind the following devicetree nodes:
-   - `servo_pwm` → a PWM channel and pin assignment for the actuator.
+  - `servo_pwm` → a PWM channel and pin assignment for the actuator.
    - `feedback_adc` → an ADC channel for position / battery feedback (optional, but recommended).
    - `power_gate` → a GPIO that controls auxiliary power rails (optional).
    - Standard Zephyr aliases (`led0`, `sw0`) for board UX.
