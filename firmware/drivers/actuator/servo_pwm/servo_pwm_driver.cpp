@@ -53,3 +53,7 @@ void ServoPwmActuator::Stop()
 }
 
 }  // namespace omsl::drivers
+
+// TODO: implement asynchronous motion completion via Zephyr work queue
+// so MoveTo() returns immediately and the completion callback fires
+// from a dedicated timer.
