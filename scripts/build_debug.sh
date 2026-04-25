@@ -4,7 +4,7 @@
 #
 # Build the openMatterSmartLock firmware (debug profile).
 # Expects a configured west workspace pointed at by NCS_DIR (default:
-# $HOME/ncs/v3.1.1). Override BOARD to target something other than the
+# $HOME/ncs/v3.1.1). Override BOARD to target a board other than the
 # nrf52840 DK.
 
 set -euo pipefail

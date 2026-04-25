@@ -7,6 +7,7 @@
 #pragma once
 
 #include <cstdint>
+#include <cstddef>
 #include <array>
 
 namespace omsl::access {

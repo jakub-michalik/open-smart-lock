@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include "board.h"
+#include "console.h"
 
 #include <zephyr/drivers/gpio.h>
 #include <zephyr/logging/log.h>
@@ -24,6 +24,8 @@ static struct gpio_callback sButtonCbData;
 
 static void ButtonHandler(const struct device * port, struct gpio_callback * cb, uint32_t pins)
 {
+    // TODO: debounce — a 50 ms guard is enough for tactile switches,
+    // but a quick contact bounce currently produces double-callbacks
     if (sButtonCallback) {
         sButtonCallback();
     }
@@ -62,7 +64,8 @@ void Console::SetStatusLed(bool on)
 
 void Console::BlinkStatusLed(uint32_t period_ms)
 {
-    // Simple blink: caller provides period; actual blink is driven by a timer (TODO)
+    // TODO: hook this up to k_timer; currently it's a one-shot LED on
+    // because the timer scaffold from board_consts.h isn't wired yet
     SetStatusLed(true);
 }
 

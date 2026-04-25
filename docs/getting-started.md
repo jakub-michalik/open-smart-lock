@@ -46,3 +46,13 @@ Unit tests live under `tests/unit/` and run on `native_sim` via ztest:
 ```bash
 ./scripts/run_tests.sh
 ```
+
+
+## Troubleshooting
+
+- **PWM device not ready:** verify the board overlay binds `servo_pwm`
+  to a real `pwm0` (or `pwm20` on newer SoCs) and that pinctrl is set.
+- **Commissioning fails over BLE:** confirm `CONFIG_BT=y` and that no
+  other BLE central is paired with the device.
+- **Build fails on missing CHIP module:** run `west update` after
+  cloning to fetch the CHIP module per the manifest.
