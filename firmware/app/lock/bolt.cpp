@@ -47,6 +47,8 @@ void Bolt::OnActuatorComplete(hal::ActuatorResult result, LockState completed_st
         TransitionTo(completed_state);
         TransitionTo(final_state);
     } else {
+        // TODO: emit a stall / failure event upstream (Matter
+        // OperatingState attribute) instead of just dropping to Unknown
         LOG_WRN("Actuator failed (%u)", static_cast<unsigned>(result));
         TransitionTo(LockState::Unknown);
     }
@@ -57,6 +59,8 @@ bool Bolt::Lock()
     if (!mActuator) return false;
     if (mState == LockState::Locked || mState == LockState::LockingInitiated) return false;
 
+    // TODO: gate the actuator power rail on via IPower before MoveTo,
+    // off again after OnActuatorComplete — currently the rail stays on
     TransitionTo(LockState::LockingInitiated);
     return mActuator->MoveTo(hal::ActuatorTarget::Locked,
         [this](hal::ActuatorResult r) {
