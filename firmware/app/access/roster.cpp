@@ -23,6 +23,8 @@ bool Roster::Init()
 {
     memset(mUsers, 0, sizeof(mUsers));
     mCredentialsCount = 0;
+    // TODO: load persisted users + credentials from Vault here so
+    // factory-fresh devices don't lose state after a clean reboot
     LOG_INF("Roster: init");
     return true;
 }

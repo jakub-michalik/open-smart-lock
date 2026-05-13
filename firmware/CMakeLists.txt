@@ -48,11 +48,15 @@ add_subdirectory(drivers/feedback/adc_potentiometer)
 add_subdirectory(drivers/power/gpio_gate)
 
 # Configure the Matter data model (Door Lock cluster + dependencies).
-# Suppress the false-positive "maybe-uninitialized" warning in the upstream
-# door-lock-server when compiled by the current toolchain.
-target_compile_options(matter-data-model PRIVATE -Wno-error=maybe-uninitialized)
-
 ncs_configure_data_model()
+
+# Suppress the false-positive "maybe-uninitialized" warning in the upstream
+# door-lock-server when compiled by the current toolchain. The target is
+# created by the CHIP module during find_package(Zephyr); apply the option
+# only if the target exists (some build modes do not pull CHIP in).
+if(TARGET matter-data-model)
+    target_compile_options(matter-data-model PRIVATE -Wno-error=maybe-uninitialized)
+endif()
 
 # All driver source files are added by driver subdirs above; nothing here
 # should include drivers/* directly.

@@ -13,3 +13,4 @@ fi
 
 nrfutil device list --traits jlink --serial-number 2>/dev/null \
     | awk '/^Serial number/{print $3; exit}'
+
