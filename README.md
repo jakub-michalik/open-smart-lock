@@ -51,7 +51,7 @@ openMatterSmartLock is not a certified smart lock, not a finished consumer produ
 └─────────────────────────────────────────────────────────────┘
 ```
 
-Full details, layer contracts, and architectural decisions are documented in [ARCHITECTURE.md](ARCHITECTURE.md). Adding new boards or actuator drivers is documented in [PORTING.md](PORTING.md).
+Full details, layer contracts, and architectural decisions are documented in [ARCHITECTURE.md](ARCHITECTURE.md). Adding new boards or new actuator drivers is documented in [PORTING.md](PORTING.md).
 
 ## Supported boards (out of the box)
 

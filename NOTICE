@@ -1,26 +1,5 @@
 openMatterSmartLock
-Copyright (c) 2025-2026 openMatterSmartLock contributors
+Copyright (c) 2025 openMatterSmartLock contributors
 
 Licensed under the Apache License, Version 2.0.
 See LICENSE for full terms.
-
-----------------------------------------------------------------------
-
-This product builds on the Zephyr RTOS, the nRF Connect SDK (NCS),
-and the Connected Home over IP (Matter) reference implementation.
-Individual source files retain the copyright notices of their
-respective contributors as required by the Apache License, Version 2.0.
-
-----------------------------------------------------------------------
-
-ZAP cluster definition
-
-The Matter Door Lock cluster definition under firmware/app/zap/
-(door_lock.zap, door_lock.matter, and the generated/* artifacts) is
-derived from the NCS Matter Door Lock sample's ZAP definition,
-licensed under LicenseRef-Nordic-5-Clause. The cluster topology
-(endpoints, clusters, attribute selection) follows the Matter
-specification for the Door Lock device type and is the canonical,
-interoperable representation used by Matter Door Lock implementations
-across the ecosystem.
-

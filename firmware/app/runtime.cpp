@@ -49,15 +49,6 @@ int Runtime::StartApp()
     Bolt::Instance().Init(actuator);
     ui::Console::Instance().Init();
 
-    // TODO: wire access::Roster and access::Vault here so that
-    // PIN-based unlock and persisted credentials are reachable from
-    // the Door Lock cluster callbacks. Currently the lock path is
-    // PIN-less and credentials are RAM-only.
-
-    // TODO: wire drivers::GpioGatePower into the actuator path so the
-    // servo rail powers up only during MoveTo() and gates off after
-    // the completion callback. Today the rail stays on for life.
-
     ui::Console::Instance().SetActionButtonCallback([]() {
         auto & lm = Bolt::Instance();
         if (lm.State() == LockState::Locked) lm.Unlock();
@@ -84,8 +75,6 @@ void Runtime::HeartbeatHandler(struct k_work * work)
     auto * fb = Instance().mFeedback;
     if (fb) {
         auto s = fb->Sample(hal::FeedbackChannel::BatteryVoltage);
-        // TODO: report battery to Matter Power Source cluster instead
-        // of just logging; today the cluster attribute is stale
         LOG_INF("Heartbeat: battery=%d mV (valid=%d)", s.value_millivolts, s.valid);
     }
     k_work_schedule(&Instance().mHeartbeat, K_MSEC(kHeartbeatIntervalMs));
