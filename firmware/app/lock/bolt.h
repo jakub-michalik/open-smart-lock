@@ -56,4 +56,3 @@ constexpr uint32_t kServoUnlockedPulseUs = 2000;
 constexpr uint32_t kServoActuationTimeoutMs = 1500;
 
 }  // namespace omsl
-

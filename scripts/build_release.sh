@@ -27,4 +27,3 @@ build_args=()
 [[ ${pristine} -eq 1 ]] && build_args+=(--pristine)
 
 west build --build-dir "${BUILD_DIR}" "${APP_DIR}" "${build_args[@]}" --board "${BOARD}" --sysbuild -- -DCONF_FILE="prj_release.conf"
-

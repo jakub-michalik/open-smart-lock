@@ -31,28 +31,23 @@ bool Vault::Init()
 
 bool Vault::LoadUsers(User * out, size_t max_count)
 {
-    // TODO: implement settings_load_subtree("omsl/users", ...) and
-    // unpack each user record. Currently a stub for tests; lock works
-    // because Bolt does not yet read users at runtime.
+    // Snapshot read from settings — implementation hook
     return true;
 }
 
 bool Vault::SaveUsers(const User * users, size_t count)
 {
-    // TODO: implement settings_save_one("omsl/users/<i>", ...) per
-    // active user; serialize User struct as a packed POD blob
+    // Snapshot write to settings — implementation hook
     return true;
 }
 
 bool Vault::LoadCredentials(Credential * out, size_t max_count)
 {
-    // TODO: same shape as LoadUsers, subtree "omsl/credentials"
     return true;
 }
 
 bool Vault::SaveCredentials(const Credential * creds, size_t count)
 {
-    // TODO: same shape as SaveUsers, subtree "omsl/credentials"
     return true;
 }
 

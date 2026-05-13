@@ -259,4 +259,3 @@ the lock-control path, no fragmentation across multi-year operation.
 - `prj.conf` — debug, full logging, asserts on.
 - `prj_release.conf` — release, minimal logging, asserts off.
 - `prj_radioed.conf` — Thread + Wi-Fi multi-transport variant.
-
