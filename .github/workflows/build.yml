@@ -66,10 +66,11 @@ jobs:
         working-directory: openMatterSmartLock
         run: |
           west init -l firmware
-          # Shallow clones (-o=--depth=1) are fine, but --narrow strips
-          # files NCS expects to be in the working tree (e.g. samples/
-          # matter/common/src/Kconfig is referenced by firmware/Kconfig).
-          west update -o=--depth=1
+          # Full (non-shallow, non-narrow) clones: several NCS projects
+          # pin to arbitrary SHAs that are not reachable in a depth=1
+          # fetch, causing the update to fail silently for multiple
+          # projects. The total workspace is ~5 GB; fits in the runner.
+          west update
 
       - name: Cache Zephyr SDK
         id: cache-sdk
