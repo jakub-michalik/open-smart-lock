@@ -28,6 +28,9 @@ jobs:
         with:
           path: openMatterSmartLock
 
+      - name: Install west
+        run: pip install --break-system-packages --no-cache-dir west
+
       - name: Initialize west workspace
         working-directory: openMatterSmartLock
         run: |
