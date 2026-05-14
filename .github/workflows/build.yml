@@ -54,19 +54,18 @@ jobs:
         uses: actions/cache@v4
         with:
           path: |
-            ${{ github.workspace }}/zephyr
-            ${{ github.workspace }}/modules
-            ${{ github.workspace }}/nrf
-            ${{ github.workspace }}/nrfxlib
-            ${{ github.workspace }}/bootloader
-            ${{ github.workspace }}/tools
-          key: ncs-v2.6.0-${{ runner.os }}-v2
+            ${{ github.workspace }}/openMatterSmartLock/zephyr
+            ${{ github.workspace }}/openMatterSmartLock/modules
+            ${{ github.workspace }}/openMatterSmartLock/nrf
+            ${{ github.workspace }}/openMatterSmartLock/nrfxlib
+            ${{ github.workspace }}/openMatterSmartLock/bootloader
+            ${{ github.workspace }}/openMatterSmartLock/tools
+          key: ncs-v2.6.0-${{ runner.os }}-v3
 
       - name: Initialize west workspace
+        working-directory: openMatterSmartLock
         run: |
-          cd openMatterSmartLock
           west init -l firmware
-          cd ..
           west update --narrow -o=--depth=1
 
       - name: Cache Zephyr SDK
@@ -91,6 +90,7 @@ jobs:
           ./setup.sh -t arm-zephyr-eabi -h -c
 
       - name: Install Zephyr Python requirements
+        working-directory: openMatterSmartLock
         run: |
           pip install -r zephyr/scripts/requirements.txt
           pip install -r nrf/scripts/requirements.txt || true
@@ -105,21 +105,23 @@ jobs:
           fi
 
       - name: Build firmware (${{ matrix.profile }}, nanoBoard / nRF52840)
+        working-directory: openMatterSmartLock
         run: |
           export ZEPHYR_TOOLCHAIN_VARIANT=zephyr
-          export ZEPHYR_SDK_INSTALL_DIR="${PWD}/zephyr-sdk-${ZEPHYR_SDK_VERSION}"
+          export ZEPHYR_SDK_INSTALL_DIR="${{ github.workspace }}/zephyr-sdk-${ZEPHYR_SDK_VERSION}"
           west build \
             --board nrf52840dk/nrf52840 \
             --sysbuild \
             --pristine \
-            openMatterSmartLock/firmware \
+            firmware \
             -- ${{ steps.prof.outputs.extra }}
 
       - name: Report size
         if: always()
+        working-directory: openMatterSmartLock
         run: |
           if [ -f build/zephyr/zephyr.elf ]; then
-            "${PWD}/zephyr-sdk-${ZEPHYR_SDK_VERSION}/arm-zephyr-eabi/bin/arm-zephyr-eabi-size" build/zephyr/zephyr.elf || true
+            "${{ github.workspace }}/zephyr-sdk-${ZEPHYR_SDK_VERSION}/arm-zephyr-eabi/bin/arm-zephyr-eabi-size" build/zephyr/zephyr.elf || true
           fi
 
       - name: Upload artifacts
@@ -128,9 +130,9 @@ jobs:
         with:
           name: omsl-nanoBoard-${{ matrix.profile }}
           path: |
-            build/zephyr/zephyr.hex
-            build/zephyr/zephyr.elf
-            build/zephyr/zephyr.map
-            build/merged.hex
+            openMatterSmartLock/build/zephyr/zephyr.hex
+            openMatterSmartLock/build/zephyr/zephyr.elf
+            openMatterSmartLock/build/zephyr/zephyr.map
+            openMatterSmartLock/build/merged.hex
           if-no-files-found: warn
           retention-days: 14
