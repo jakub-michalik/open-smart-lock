@@ -47,13 +47,33 @@ jobs:
             unzip \
             python3-pip
 
-      - name: Install GN (used by Matter / ConnectedHomeIP)
+      - name: Cache GN build
+        id: cache-gn
+        uses: actions/cache@v4
+        with:
+          path: /tmp/gn-bin/gn
+          key: gn-71305b07d708-${{ runner.os }}
+
+      - name: Build GN compatible with Matter on NCS v3.1.1
+        if: steps.cache-gn.outputs.cache-hit != 'true'
         run: |
-          GN_URL="https://chrome-infra-packages.appspot.com/dl/gn/gn/linux-amd64/+/latest"
-          mkdir -p /tmp/gn && cd /tmp/gn
-          wget -q -O gn.zip "${GN_URL}"
-          unzip -q gn.zip
-          sudo install -m 755 gn /usr/local/bin/gn
+          # The Matter pigweed build trips a "Duplicate output file" GN
+          # error when a too-new GN is used. NCS v3.1.1 ships GN
+          # version 2132 (commit 71305b07d708) in its toolchain, so we
+          # build the same revision from source here.
+          sudo apt-get install -y --no-install-recommends clang
+          git clone --no-checkout https://gn.googlesource.com/gn /tmp/gn-src
+          cd /tmp/gn-src
+          git fetch --depth=1 origin 71305b07d708
+          git checkout 71305b07d708
+          python build/gen.py
+          ninja -C out
+          mkdir -p /tmp/gn-bin
+          cp out/gn /tmp/gn-bin/gn
+
+      - name: Install GN
+        run: |
+          sudo install -m 755 /tmp/gn-bin/gn /usr/local/bin/gn
           gn --version
 
       - name: Install west
