@@ -112,7 +112,7 @@ jobs:
           west build \
             --board nrf52840dk/nrf52840 \
             --sysbuild \
-            --pristine \
+            --pristine always \
             firmware \
             -- ${{ steps.prof.outputs.extra }}
 
