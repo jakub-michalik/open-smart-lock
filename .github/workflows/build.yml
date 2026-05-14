@@ -111,10 +111,12 @@ jobs:
           export ZEPHYR_SDK_INSTALL_DIR="${{ github.workspace }}/zephyr-sdk-${ZEPHYR_SDK_VERSION}"
           # NCS v2.6.0 still uses Zephyr HWMv1 board naming (underscore,
           # not slash). The slash form nrf52840dk/nrf52840 only became
-          # valid in Zephyr 3.6 / NCS 2.7+.
+          # valid in Zephyr 3.6 / NCS 2.7+. We also skip --sysbuild
+          # here: SB_CONFIG_MATTER landed in NCS 2.7, and the debug /
+          # release profiles do not need MCUboot anyway (the OTA
+          # profile is its own build path that lives outside this matrix).
           west build \
             --board nrf52840dk_nrf52840 \
-            --sysbuild \
             --pristine always \
             firmware \
             -- ${{ steps.prof.outputs.extra }}
