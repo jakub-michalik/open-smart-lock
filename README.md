@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="docs/assets/matter-logo.svg" alt="Matter" width="120" />
+</p>
+
 # openMatterSmartLock
 
 [![build](https://github.com/jakub-michalik/open-smart-lock/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/jakub-michalik/open-smart-lock/actions/workflows/build.yml)

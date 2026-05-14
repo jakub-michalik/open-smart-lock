@@ -8,6 +8,8 @@ edit_uri: edit/main/docs/
 theme:
   name: material
   language: en
+  logo: assets/matter-logo.svg
+  favicon: assets/matter-logo.svg
   features:
     - navigation.tabs
     - navigation.sections

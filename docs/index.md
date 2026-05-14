@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="assets/matter-logo.svg" alt="Matter" width="120" />
+</p>
+
 # openMatterSmartLock
 
 > **An open, hardware-independent Matter Door Lock reference implementation.**
