@@ -60,11 +60,12 @@ jobs:
           # The Matter pigweed build trips a "Duplicate output file" GN
           # error when a too-new GN is used. NCS v3.1.1 ships GN
           # version 2132 (commit 71305b07d708) in its toolchain, so we
-          # build the same revision from source here.
+          # build the same revision from source here. The Gerrit-style
+          # smart-HTTP server does not allow fetching arbitrary SHAs as
+          # refs, so we clone in full and check out the commit.
           sudo apt-get install -y --no-install-recommends clang
-          git clone --no-checkout https://gn.googlesource.com/gn /tmp/gn-src
+          git clone https://gn.googlesource.com/gn /tmp/gn-src
           cd /tmp/gn-src
-          git fetch --depth=1 origin 71305b07d708
           git checkout 71305b07d708
           python build/gen.py
           ninja -C out
