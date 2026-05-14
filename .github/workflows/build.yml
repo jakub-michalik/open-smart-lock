@@ -20,16 +20,13 @@ jobs:
           - debug
           - release
     container:
-      image: ghcr.io/nrfconnect/sdk-nrf-toolchain:v2.6.0
+      image: nordicplayground/nrfconnect-sdk:main
       options: --user root
 
     steps:
       - uses: actions/checkout@v4
         with:
           path: openMatterSmartLock
-
-      - name: Install west
-        run: pip install --break-system-packages --no-cache-dir west
 
       - name: Initialize west workspace
         working-directory: openMatterSmartLock
