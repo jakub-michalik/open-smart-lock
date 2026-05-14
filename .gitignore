@@ -10,8 +10,8 @@ out/
 *.map
 *.lst
 .west/
-zephyr/
-modules/
+/zephyr/
+/modules/
 .vscode/
 .idea/
 .cache/

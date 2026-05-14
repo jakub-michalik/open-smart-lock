@@ -20,7 +20,7 @@ jobs:
           - debug
           - release
     container:
-      image: nordicplayground/nrfconnect-sdk:v2.6.0
+      image: ghcr.io/nrfconnect/sdk-nrf-toolchain:v2.6.0
       options: --user root
 
     steps:
