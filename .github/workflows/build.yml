@@ -44,7 +44,17 @@ jobs:
             file \
             make \
             wget \
+            unzip \
             python3-pip
+
+      - name: Install GN (used by Matter / ConnectedHomeIP)
+        run: |
+          GN_URL="https://chrome-infra-packages.appspot.com/dl/gn/gn/linux-amd64/+/latest"
+          mkdir -p /tmp/gn && cd /tmp/gn
+          wget -q -O gn.zip "${GN_URL}"
+          unzip -q gn.zip
+          sudo install -m 755 gn /usr/local/bin/gn
+          gn --version
 
       - name: Install west
         run: pip install west
