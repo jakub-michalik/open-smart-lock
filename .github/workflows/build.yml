@@ -60,7 +60,7 @@ jobs:
             ${{ github.workspace }}/openMatterSmartLock/nrfxlib
             ${{ github.workspace }}/openMatterSmartLock/bootloader
             ${{ github.workspace }}/openMatterSmartLock/tools
-          key: ncs-v3.1.1-${{ runner.os }}-v1
+          key: ncs-v3.1.1-${{ runner.os }}-v2
 
       - name: Initialize west workspace
         working-directory: openMatterSmartLock
