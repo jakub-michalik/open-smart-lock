@@ -1,0 +1,14 @@
+/*
+ * Copyright (c) 2025 openMatterSmartLock contributors
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * MCUboot bootloader image for nanoBoard. Internal flash only: both
+ * primary and secondary slots live in the on-SoC 1 MiB flash. No
+ * external NOR flash is used.
+ */
+
+/ {
+    chosen {
+        zephyr,code-partition = &boot_partition;
+    };
+};

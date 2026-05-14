@@ -1,4 +1,4 @@
-# Partition layout for nrf52840dk with OTA — internal flash only.
+# Partition layout for nanoBoard with OTA — internal flash only.
 # Both MCUboot slots in on-SoC 1 MiB flash with 484 KB each (room for
 # the release+OTA image plus the MCUboot trailer + header).
 #
