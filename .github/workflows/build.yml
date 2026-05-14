@@ -109,8 +109,11 @@ jobs:
         run: |
           export ZEPHYR_TOOLCHAIN_VARIANT=zephyr
           export ZEPHYR_SDK_INSTALL_DIR="${{ github.workspace }}/zephyr-sdk-${ZEPHYR_SDK_VERSION}"
+          # NCS v2.6.0 still uses Zephyr HWMv1 board naming (underscore,
+          # not slash). The slash form nrf52840dk/nrf52840 only became
+          # valid in Zephyr 3.6 / NCS 2.7+.
           west build \
-            --board nrf52840dk/nrf52840 \
+            --board nrf52840dk_nrf52840 \
             --sysbuild \
             --pristine always \
             firmware \
