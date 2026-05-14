@@ -38,6 +38,8 @@ bool emberAfPluginDoorLockOnDoorLockCommand(chip::EndpointId endpointId,
                                             OperationErrorEnum & err)
 {
     LOG_INF("Door Lock: LockDoor (Matter)");
+    // TODO: when RequirePINforRemoteOperation is set, validate pinCode
+    // against omsl::access::Roster::ValidatePin and set err accordingly
     return omsl::Bolt::Instance().Lock();
 }
 
@@ -48,5 +50,6 @@ bool emberAfPluginDoorLockOnDoorUnlockCommand(chip::EndpointId endpointId,
                                               OperationErrorEnum & err)
 {
     LOG_INF("Door Lock: UnlockDoor (Matter)");
+    // TODO: same PIN validation path as LockDoor — share a helper
     return omsl::Bolt::Instance().Unlock();
 }
