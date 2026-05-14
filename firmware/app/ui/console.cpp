@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include "board.h"
+#include "console.h"
 
 #include <zephyr/drivers/gpio.h>
 #include <zephyr/logging/log.h>
