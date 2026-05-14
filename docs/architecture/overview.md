@@ -8,7 +8,7 @@ The intent is reference-quality clarity: each layer has a single responsibility,
 
 - **Hardware independence.** No application or domain layer code may call into board-specific or driver-specific APIs directly. All hardware access flows through HAL interfaces (`actuator.h`, `feedback.h`, `power.h`, `transport_switch.h`).
 - **Matter spec fidelity.** The Door Lock cluster is implemented according to the Matter specification with no manufacturer-specific deviations. The device commissions and behaves as a first-class Matter Door Lock in any ecosystem.
-- **Multi-board, multi-driver build matrix.** A single application binary configuration must build cleanly across all supported boards, with driver selection controlled by Kconfig.
+- **Driver selection at build time.** A single application binary configuration must build cleanly with driver selection controlled by Kconfig — adding a new actuator or feedback driver does not touch the domain layer.
 - **Event-driven cross-context safety.** All cross-layer interactions are dispatched through an event queue, never via direct function calls from one execution context to another.
 - **Explicit state machines.** Lock state transitions are explicitly `Initiated → Completed`; "completed" is reported only after the physical actuator confirms motion.
 - **Low-power awareness.** Telemetry is consolidated into a single heartbeat task to give one coherent point for radio wake-up alignment.
@@ -28,30 +28,22 @@ Execution model:
 
 ## 3. Layered architecture
 
-```text
-┌───────────────────────────────────────────────────────────────┐
-│  Protocol integration                                         │
-│  ZCL Door Lock cluster glue (zcl_callbacks.cpp)               │
-├───────────────────────────────────────────────────────────────┤
-│  Application orchestration                                    │
-│  Application — lifecycle, event routing, Matter init, heartbeat   │
-├───────────────────────────────────────────────────────────────┤
-│  Lock domain                                                  │
-│  LockController — state machine, PIN validation              │
-├───────────────────────────────────────────────────────────────┤
-│  Access and persistence                                       │
-│  AccessController + AccessStore — users, credentials,          │
-│  schedules; in-memory model with snapshot persistence         │
-├───────────────────────────────────────────────────────────────┤
-│  Hardware Abstraction Layer (HAL) — pure C++ interfaces       │
-│  actuator.h | feedback.h | power.h | transport_switch.h       │
-├───────────────────────────────────────────────────────────────┤
-│  Drivers — concrete HAL implementations, Kconfig-selected     │
-│  servo_pwm | adc_potentiometer | gpio_gate | ...              │
-├───────────────────────────────────────────────────────────────┤
-│  Console support                                                │
-│  Zephyr DTS overlays, Kconfig fragments, partition managers   │
-└───────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TB
+    PROTO["Protocol integration<br/><i>zcl_callbacks.cpp</i> — Matter Door Lock cluster glue"]
+    APP["Application orchestration<br/><i>Runtime</i> — lifecycle, event routing, Matter init, heartbeat"]
+    LOCK["Lock domain<br/><i>Bolt</i> — state machine, PIN validation"]
+    ACCESS["Access &amp; persistence<br/><i>Roster + Vault</i> — users, credentials, schedules"]
+    HAL["Hardware Abstraction Layer<br/>actuator.h · feedback.h · power.h · transport_switch.h"]
+    DRV["HAL drivers<br/>servo_pwm · adc_potentiometer · gpio_gate · ..."]
+    BOARD["Board support<br/>Zephyr DTS overlays · Kconfig fragments · partition managers"]
+
+    PROTO --> APP
+    APP --> LOCK
+    APP --> ACCESS
+    LOCK --> HAL
+    HAL --> DRV
+    DRV --> BOARD
 ```
 
 ### 3.1. Layer contracts
@@ -62,11 +54,11 @@ Each layer exposes a narrow interface to the layer above and consumes only the l
 |---|---|
 | Matter stack → Protocol integration | CHIP cluster callbacks |
 | Protocol integration → Application orchestration | event dispatch (PostTask / ScheduleLambda) |
-| Application orchestration → Lock domain | `LockController` public API |
-| Lock domain → Access & persistence | `AccessController` public API |
+| Application orchestration → Lock domain | `Bolt` public API |
+| Application orchestration → Access & persistence | `Roster` public API |
 | Lock domain → HAL | `actuator.h`, `feedback.h` interfaces |
 | HAL → Drivers | virtual interface dispatch |
-| Drivers → Console | Zephyr device API (devicetree, GPIO, PWM, ADC) |
+| Drivers → Board | Zephyr device API (devicetree, GPIO, PWM, ADC) |
 
 No layer reaches across more than one boundary. The Lock domain does not access Zephyr APIs directly; the HAL does not know about Matter; the Protocol integration does not poke registers.
 
@@ -115,12 +107,13 @@ Pure interface for runtime transport selection (Thread ↔ Wi-Fi) on platforms t
 
 | Module | Layer | Responsibility |
 |---|---|---|
-| `main.cpp` | Bootstrap | Starts `Application`, returns CHIP error code |
-| `application.{cpp,h}` | Application orchestration | Matter init, event handlers, lock callback wiring, heartbeat scheduling, primary event loop |
-| `manager.{cpp,h}` | Lock domain | State machine (`kLockingInitiated`, `kLockingCompleted`, `kUnlockingInitiated`, `kUnlockingCompleted`), physical operation triggering via HAL, state-change propagation |
-| `access/*` | Access and persistence | User / credential / schedule management, PIN validation, persistent storage |
-| `zcl_callbacks.cpp` | Protocol integration | Matter Door Lock cluster command and attribute handlers |
-| `ui/*` | Console UX | LED patterns, button input, BLE commissioning UX |
+| `main.cpp` | Bootstrap | Starts `Runtime`, returns CHIP error code |
+| `runtime.{cpp,h}` | Application orchestration | Matter init, event handlers, lock callback wiring, heartbeat scheduling, primary event loop |
+| `lock/bolt.{cpp,h}` | Lock domain | State machine (`LockingInitiated`, `LockingCompleted`, `UnlockingInitiated`, `UnlockingCompleted`), physical operation triggering via HAL, state-change propagation |
+| `access/roster.{cpp,h}` | Access and persistence | User / credential / schedule management, PIN validation against persisted state |
+| `access/vault.{cpp,h}` | Access and persistence | Snapshot-based persistence backend on top of Zephyr settings / NVS |
+| `matter/zcl_callbacks.cpp` | Protocol integration | Matter Door Lock cluster command and attribute handlers |
+| `ui/console.{cpp,h}` | UX | LED patterns, button input, BLE commissioning UX |
 | `hal/*.h` | HAL | Pure interfaces (no implementation) |
 | `drivers/actuator/servo_pwm/*` | Driver | PWM servo implementation of `actuator.h` |
 | `drivers/feedback/adc_potentiometer/*` | Driver | ADC potentiometer implementation of `feedback.h` |
@@ -131,50 +124,51 @@ Pure interface for runtime transport selection (Thread ↔ Wi-Fi) on platforms t
 
 ### 6.1. Local button lock / unlock
 
-1. Console UX layer detects button event, posts event to `Application` via `PostTask`.
-2. `Application` invokes `LockController::Lock()` or `Unlock()`.
-3. `LockController` transitions to `kLockingInitiated` / `kUnlockingInitiated`, calls actuator HAL `MoveTo(target)`.
+1. Console (UX) layer detects button event, posts event to `Runtime` via `PostTask`.
+2. `Runtime` invokes `Bolt::Lock()` or `Bolt::Unlock()`.
+3. `Bolt` transitions to `LockingInitiated` / `UnlockingInitiated`, calls actuator HAL `MoveTo(target)`.
 4. Actuator driver schedules motion asynchronously; on completion, fires a callback.
-5. On successful completion, `LockController` transitions to `Completed` state and notifies `Application`.
-6. `Application` schedules a Matter attribute update via `SystemLayer().ScheduleLambda`, which writes the new state into the Door Lock cluster and triggers a Matter report.
-7. On failed motion, `LockController` surfaces a stall / timeout event instead of advancing the state.
+5. On successful completion, `Bolt` transitions to `Completed` state and notifies `Runtime`.
+6. `Runtime` schedules a Matter attribute update via `SystemLayer().ScheduleLambda`, which writes the new state into the Door Lock cluster and triggers a Matter report.
+7. On failed motion, `Bolt` surfaces a stall / timeout event instead of advancing the state.
 
 ### 6.2. Remote Matter lock / unlock
 
 1. Matter controller (e.g., Apple Home) invokes `LockDoor` / `UnlockDoor` command.
 2. Matter stack dispatches to ZCL handler in `zcl_callbacks.cpp`.
-3. If `RequirePINforRemoteOperation` is set, `LockController::ValidatePIN` is called.
+3. If `RequirePINforRemoteOperation` is set, `Roster::ValidatePin` is called.
 4. On success, the flow joins step 3 of the local flow above.
 
 ### 6.3. Boot and initialization
 
-1. `main` starts `Application::StartApp`.
-2. `Application` initializes the board UX layer, registers Matter event handlers, wires lock callbacks.
+1. `main` starts `Runtime::StartApp`.
+2. `Runtime` initializes the Console UX layer, registers Matter event handlers, wires lock callbacks.
 3. Matter server initialization: `PrepareServer`, `StartServer`.
-4. `AccessStore` loads persisted users / credentials / schedules into the in-memory `AccessController`.
+4. `Vault` loads persisted users / credentials / schedules into the in-memory `Roster`.
 5. Actuator driver initializes hardware (PWM, GPIO, ADC) via Zephyr devicetree bindings.
 6. Heartbeat timer starts (default: every 5 s — uptime, battery sample, servo state).
 7. Main event loop: `while (true) { Nrf::DispatchNextTask(); }`.
 
 ## 7. Persistence model
 
-- Users, credentials, and schedules live in RAM during runtime, owned by `AccessController`.
-- Persistence is **snapshot-based** via `AccessStore`: writes occur on explicit save points (commissioning, factory reset, credential add / remove), not write-through on every state change.
+- Users, credentials, and schedules live in RAM during runtime, owned by `Roster`.
+- Persistence is **snapshot-based** via `Vault`: writes occur on explicit save points (commissioning, factory reset, credential add / remove), not write-through on every state change.
 - Trade-off: predictable flash wear and simple consistency model, at the cost of a small window of data loss on uncontrolled reset.
-- Storage backend: Zephyr settings / NVS, accessed only via `AccessStore`.
+- Storage backend: Zephyr settings / NVS, accessed only via `Vault`.
 
 ## 8. Configuration and build variants
 
 ### 8.1. Project profiles
 
 - `prj.conf` — debug build, full logging.
-- `prj_release.conf` — release build, logging stripped or minimized, factory-data flow enabled.
-- `prj_radioed.conf` — multi-transport variant for platforms that support Thread + Wi-Fi switching.
+- `prj_release.conf` — release build, logging stripped, aggressive size optimization.
+- `prj_release_ota.conf` — release + MCUboot + Matter OTA Requestor, internal-flash slots.
+- `prj_radioed.conf` — Thread + Wi-Fi multi-transport variant for SoCs that carry both radios.
 
 ### 8.2. Key Kconfig surfaces
 
 - HAL driver selection (`CONFIG_OMSL_ACTUATOR_SERVO_PWM`, etc.)
-- Console support (`CONFIG_BOARD_*` from Zephyr)
+- Board support (`CONFIG_BOARD_*` from Zephyr)
 - Matter / CHIP integration options (commissioning, factory data, OTA)
 - Power management policies (sleep, heartbeat interval, telemetry gating)
 - BLE / NUS optional command surface
@@ -203,7 +197,17 @@ Custom devicetree bindings (e.g., for the servo actuator binding) live in `firmw
 - **New board** → add `firmware/boards/<board>.overlay` and `<board>.conf`, plus `pm_static_<board>.yml` if partitioning is needed. See [the porting guide](../guides/porting.md).
 - **New companion app** → openMatterSmartLock does not ship a companion app of its own; commissioning works in any standard Matter commissioner. Downstream products that want a branded or feature-specific companion app are expected to host it in a separate repository.
 
-## 12. Key architectural decisions (ADR-style summary)
+## 12. Memory model (summary)
+
+See [the memory model document](memory-model.md) for the full document. The condensed rules:
+
+- Static allocation by default; module singletons in `.bss`.
+- No heap from domain code. Heap is reserved for Matter / BLE / Thread stacks.
+- Per-thread stacks sized against measured high-water marks, not guessed.
+- No C++ exceptions, no RTTI.
+- Snapshot-based persistence; access records live in RAM and flush on explicit save points.
+
+## 13. Key architectural decisions (ADR-style summary)
 
 ### ADR-1 — Event-driven orchestration over synchronous call chain
 
@@ -229,33 +233,6 @@ Lock operations are modeled as `Initiated → Completed` rather than as immediat
 
 The protocol surface is pure Matter Door Lock. The device commissions and behaves as a first-class Matter Door Lock in any ecosystem. No manufacturer-specific clusters are required for basic operation. Implementations that need product-specific configuration are expected to layer those on top in a downstream repository, not in openMatterSmartLock itself.
 
-
-## 14. Memory model (summary)
-
-See [the memory model document](memory-model.md) for the full document.
-The condensed rules:
-
-- Static allocation by default; module singletons in `.bss`.
-- No heap from domain code. Heap is reserved for Matter / BLE / Thread
-  stacks.
-- Per-thread stacks sized against measured high-water marks, not
-  guessed.
-- No C++ exceptions, no RTTI.
-- Snapshot-based persistence; access records live in RAM and flush on
-  explicit save points.
-
 ### ADR-7 — Static-allocation policy for domain layer
 
-Domain-layer code (lock state machine, access manager, drivers) must
-not call into dynamic allocators. All such modules are constructed
-once, in static storage, with first-use initialization. The Matter
-stack is permitted to use the heap pool; the application is not.
-Rationale: deterministic memory footprint, no allocation failures in
-the lock-control path, no fragmentation across multi-year operation.
-
-
-## 13. Build profiles
-
-- `prj.conf` — debug, full logging, asserts on.
-- `prj_release.conf` — release, minimal logging, asserts off.
-- `prj_radioed.conf` — Thread + Wi-Fi multi-transport variant.
+Domain-layer code (lock state machine, access manager, drivers) must not call into dynamic allocators. All such modules are constructed once, in static storage, with first-use initialization. The Matter stack is permitted to use the heap pool; the application is not. Rationale: deterministic memory footprint, no allocation failures in the lock-control path, no fragmentation across multi-year operation.
