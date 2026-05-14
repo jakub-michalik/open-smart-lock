@@ -109,6 +109,13 @@ jobs:
           pip install -r zephyr/scripts/requirements.txt
           pip install -r nrf/scripts/requirements.txt || true
 
+      - name: Install Matter codegen Python package
+        working-directory: openMatterSmartLock
+        run: |
+          # chip_codegen.cmake imports `from matter.idl.generators...`
+          # which is provided by Matter's py_matter_idl package.
+          pip install modules/lib/matter/scripts/py_matter_idl
+
       - name: Resolve profile flags
         id: prof
         run: |
