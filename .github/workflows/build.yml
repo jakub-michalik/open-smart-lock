@@ -109,13 +109,15 @@ jobs:
         run: |
           export ZEPHYR_TOOLCHAIN_VARIANT=zephyr
           export ZEPHYR_SDK_INSTALL_DIR="${{ github.workspace }}/zephyr-sdk-${ZEPHYR_SDK_VERSION}"
-          # Skip --sysbuild for the debug + release matrix: those are flat
-          # images (no MCUboot, no OTA). --sysbuild on NCS 3.x further
-          # requires ncs_sysbuild_extensions from the full NCS workspace,
-          # which conflicts with the --narrow west update we use for speed.
-          # The release+OTA profile is built on a separate path.
+          # Force --no-sysbuild: NCS 3.x auto-enables sysbuild when it
+          # detects firmware/Kconfig.sysbuild. The sysbuild path then
+          # pulls ncs_sysbuild_extensions which is missing under the
+          # --narrow west update used for fast CI. Debug + release are
+          # flat images (no MCUboot, no OTA) so sysbuild adds nothing
+          # here; the release+OTA profile is its own separate build.
           west build \
             --board nrf52840dk/nrf52840 \
+            --no-sysbuild \
             --pristine always \
             firmware \
             -- ${{ steps.prof.outputs.extra }}
