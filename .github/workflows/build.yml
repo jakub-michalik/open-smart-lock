@@ -21,7 +21,7 @@ jobs:
           - release
 
     env:
-      ZEPHYR_SDK_VERSION: "0.16.8"
+      ZEPHYR_SDK_VERSION: "0.17.0"
 
     steps:
       - uses: actions/checkout@v4
@@ -60,7 +60,7 @@ jobs:
             ${{ github.workspace }}/openMatterSmartLock/nrfxlib
             ${{ github.workspace }}/openMatterSmartLock/bootloader
             ${{ github.workspace }}/openMatterSmartLock/tools
-          key: ncs-v2.6.0-${{ runner.os }}-v3
+          key: ncs-v3.1.1-${{ runner.os }}-v1
 
       - name: Initialize west workspace
         working-directory: openMatterSmartLock
@@ -109,14 +109,9 @@ jobs:
         run: |
           export ZEPHYR_TOOLCHAIN_VARIANT=zephyr
           export ZEPHYR_SDK_INSTALL_DIR="${{ github.workspace }}/zephyr-sdk-${ZEPHYR_SDK_VERSION}"
-          # NCS v2.6.0 still uses Zephyr HWMv1 board naming (underscore,
-          # not slash). The slash form nrf52840dk/nrf52840 only became
-          # valid in Zephyr 3.6 / NCS 2.7+. We also skip --sysbuild
-          # here: SB_CONFIG_MATTER landed in NCS 2.7, and the debug /
-          # release profiles do not need MCUboot anyway (the OTA
-          # profile is its own build path that lives outside this matrix).
           west build \
-            --board nrf52840dk_nrf52840 \
+            --board nrf52840dk/nrf52840 \
+            --sysbuild \
             --pristine always \
             firmware \
             -- ${{ steps.prof.outputs.extra }}
