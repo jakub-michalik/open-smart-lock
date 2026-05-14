@@ -1,13 +1,12 @@
 # Getting started
 
-Build openMatterSmartLock on the reference board (nRF52840 DK) in five
+Build openMatterSmartLock on the reference nanoBoard hardware in five
 steps.
 
 ## 1. Prerequisites
 
 - nRF Connect SDK v2.6.0 (pinned in `firmware/west.yml`).
-- A supported board: nRF52840 DK, nRF5340 DK, nRF54L15 DK, nRF54LM20 DK,
-  nRF7002 DK, or nanoBoard.
+- nanoBoard hardware (nRF52840-based module).
 - Working west / Zephyr environment.
 
 ## 2. Workspace

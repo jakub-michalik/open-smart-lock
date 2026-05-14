@@ -2,14 +2,14 @@
 
 > **An open, hardware-independent Matter Door Lock reference implementation.**
 > Built on Zephyr, the nRF Connect SDK, and the ConnectedHomeIP (Matter) stack.
-> Designed from day one with a clean layered architecture, explicit hardware abstraction interfaces, and multi-board support.
+> Designed from day one with a clean layered architecture and explicit hardware abstraction interfaces.
 
 ## What this is
 
 openMatterSmartLock is a complete Matter Door Lock firmware that:
 
 - implements the standard **Matter Door Lock cluster**, so the device commissions and behaves as a first-class Matter Door Lock in any ecosystem (Apple Home, Google Home, Home Assistant, SmartThings),
-- runs on **multiple Nordic SoCs** (nRF52840, nRF5340, nRF54L15, nRF54LM20, nRF7002) via Zephyr's devicetree and Kconfig,
+- runs on the nRF52840 SoC via Zephyr's devicetree and Kconfig, with porting to other Nordic SoCs intentionally left as a small, well-defined exercise,
 - **does not assume specific actuator hardware**: actuator, feedback, and power-gating are exposed as Hardware Abstraction Layer (HAL) interfaces with selectable driver implementations,
 - supports **Thread, Wi-Fi, and runtime transport switching** on platforms that support it,
 - ships with a **PWM servo driver** as the reference actuator implementation and clear extension points for DC motors, latching solenoids, or stepper drives.
@@ -18,7 +18,7 @@ Commissioning is performed through any standard Matter commissioner — Apple Ho
 
 ## What this is not
 
-openMatterSmartLock is not a certified smart lock, not a finished consumer product, and not a substitute for proper mechanical and security certification. The implementation is reference quality: clean architecture, documented decisions, working multi-board build, but no compliance claims.
+openMatterSmartLock is not a certified smart lock, not a finished consumer product, and not a substitute for proper mechanical and security certification. The implementation is reference quality: clean architecture, documented decisions, working build, but no compliance claims.
 
 ## Architecture at a glance
 
@@ -53,14 +53,9 @@ openMatterSmartLock is not a certified smart lock, not a finished consumer produ
 
 Full details, layer contracts, and architectural decisions are documented in [ARCHITECTURE.md](ARCHITECTURE.md). Adding new boards or actuator drivers is documented in [PORTING.md](PORTING.md).
 
-## Supported boards (out of the box)
+## Supported board
 
-- nRF52840 DK
-- nRF5340 DK (multi-image, optional Thread/Wi-Fi switch)
-- nRF54L15 DK
-- nRF54LM20 DK
-- nRF7002 DK (with optional nRF7001)
-- nanoBoard (community-friendly servo retrofit example)
+- **nanoBoard** — nRF52840 module used as the project's reference HW. The board overlay lives in [`firmware/boards/nanoBoard.overlay`](firmware/boards/nanoBoard.overlay).
 
 Adding additional boards is a matter of supplying a Zephyr `<board>.overlay`, `<board>.conf`, and (where partitioning is needed) a `pm_static_<board>.yml`. See [PORTING.md](PORTING.md).
 
