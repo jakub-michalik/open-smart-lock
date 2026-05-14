@@ -19,20 +19,81 @@ jobs:
         profile:
           - debug
           - release
-    container:
-      image: nordicplayground/nrfconnect-sdk:main
-      options: --user root
+
+    env:
+      ZEPHYR_SDK_VERSION: "0.16.8"
 
     steps:
       - uses: actions/checkout@v4
         with:
           path: openMatterSmartLock
 
-      - name: Initialize west workspace
-        working-directory: openMatterSmartLock
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Install host build dependencies
         run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            ninja-build \
+            gperf \
+            ccache \
+            device-tree-compiler \
+            xz-utils \
+            file \
+            make \
+            wget \
+            python3-pip
+
+      - name: Install west
+        run: pip install west
+
+      - name: Cache NCS workspace
+        id: cache-ncs
+        uses: actions/cache@v4
+        with:
+          path: |
+            ${{ github.workspace }}/zephyr
+            ${{ github.workspace }}/modules
+            ${{ github.workspace }}/nrf
+            ${{ github.workspace }}/nrfxlib
+            ${{ github.workspace }}/bootloader
+            ${{ github.workspace }}/tools
+          key: ncs-v2.6.0-${{ runner.os }}-v2
+
+      - name: Initialize west workspace
+        run: |
+          cd openMatterSmartLock
           west init -l firmware
+          cd ..
           west update --narrow -o=--depth=1
+
+      - name: Cache Zephyr SDK
+        id: cache-sdk
+        uses: actions/cache@v4
+        with:
+          path: ${{ github.workspace }}/zephyr-sdk-${{ env.ZEPHYR_SDK_VERSION }}
+          key: zephyr-sdk-${{ env.ZEPHYR_SDK_VERSION }}-${{ runner.os }}
+
+      - name: Download Zephyr SDK
+        if: steps.cache-sdk.outputs.cache-hit != 'true'
+        run: |
+          SDK=zephyr-sdk-${ZEPHYR_SDK_VERSION}_linux-x86_64_minimal.tar.xz
+          wget -q "https://github.com/zephyrproject-rtos/sdk-ng/releases/download/v${ZEPHYR_SDK_VERSION}/${SDK}"
+          tar xf "${SDK}"
+          cd "zephyr-sdk-${ZEPHYR_SDK_VERSION}"
+          ./setup.sh -t arm-zephyr-eabi -h -c
+
+      - name: Register Zephyr SDK
+        run: |
+          cd "zephyr-sdk-${ZEPHYR_SDK_VERSION}"
+          ./setup.sh -t arm-zephyr-eabi -h -c
+
+      - name: Install Zephyr Python requirements
+        run: |
+          pip install -r zephyr/scripts/requirements.txt
+          pip install -r nrf/scripts/requirements.txt || true
 
       - name: Resolve profile flags
         id: prof
@@ -44,21 +105,21 @@ jobs:
           fi
 
       - name: Build firmware (${{ matrix.profile }}, nanoBoard / nRF52840)
-        working-directory: openMatterSmartLock
         run: |
+          export ZEPHYR_TOOLCHAIN_VARIANT=zephyr
+          export ZEPHYR_SDK_INSTALL_DIR="${PWD}/zephyr-sdk-${ZEPHYR_SDK_VERSION}"
           west build \
             --board nrf52840dk/nrf52840 \
             --sysbuild \
             --pristine \
-            firmware \
+            openMatterSmartLock/firmware \
             -- ${{ steps.prof.outputs.extra }}
 
       - name: Report size
         if: always()
-        working-directory: openMatterSmartLock
         run: |
           if [ -f build/zephyr/zephyr.elf ]; then
-            arm-zephyr-eabi-size build/zephyr/zephyr.elf || true
+            "${PWD}/zephyr-sdk-${ZEPHYR_SDK_VERSION}/arm-zephyr-eabi/bin/arm-zephyr-eabi-size" build/zephyr/zephyr.elf || true
           fi
 
       - name: Upload artifacts
@@ -67,9 +128,9 @@ jobs:
         with:
           name: omsl-nanoBoard-${{ matrix.profile }}
           path: |
-            openMatterSmartLock/build/zephyr/zephyr.hex
-            openMatterSmartLock/build/zephyr/zephyr.elf
-            openMatterSmartLock/build/zephyr/zephyr.map
-            openMatterSmartLock/build/merged.hex
+            build/zephyr/zephyr.hex
+            build/zephyr/zephyr.elf
+            build/zephyr/zephyr.map
+            build/merged.hex
           if-no-files-found: warn
           retention-days: 14
