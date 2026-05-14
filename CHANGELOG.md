@@ -23,3 +23,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Six supported boards: nanoBoard, nanoBoard, nanoBoard, nanoBoard, nanoBoard, nanoBoard.
 - Unit tests under `tests/unit/` using ztest + mock HAL.
 - Documentation: README, ARCHITECTURE, PORTING, CONTRIBUTING, getting-started, security-model, power-budget.
+
+### Build verified (nanoBoard, internal flash only)
+
+- Sysbuild path `-DSB_CONFIG_MATTER_OTA=n` builds a flashable hex
+  (~590 KB release, ~605 KB debug) without external NOR.
+- Source docs (power budget, security model) filled to reference quality.
