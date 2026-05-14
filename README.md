@@ -1,8 +1,12 @@
-<p align="center">
-  <img src="docs/assets/matter-logo.svg" alt="Matter" width="120" />
-</p>
-
-# openMatterSmartLock
+<table>
+<tr>
+<td width="100"><img src="docs/assets/matter-logo.svg" alt="Matter" width="80"/></td>
+<td>
+<h1>openMatterSmartLock</h1>
+<sub><b>Built for the Matter protocol</b> · hardware-independent Door Lock firmware · Zephyr + nRF Connect SDK + ConnectedHomeIP</sub>
+</td>
+</tr>
+</table>
 
 [![build](https://github.com/jakub-michalik/open-smart-lock/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/jakub-michalik/open-smart-lock/actions/workflows/build.yml)
 [![tests](https://github.com/jakub-michalik/open-smart-lock/actions/workflows/tests.yml/badge.svg?branch=main)](https://github.com/jakub-michalik/open-smart-lock/actions/workflows/tests.yml)
