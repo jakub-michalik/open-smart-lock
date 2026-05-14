@@ -7,21 +7,22 @@ on:
   push:
     branches: [main]
   pull_request:
+  workflow_dispatch:
 
 jobs:
-  build:
+  firmware:
+    name: ${{ matrix.profile }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        board:
-          - nanoBoard
-          - nanoBoard
-          - nanoBoard
-          - nanoBoard/nrf54lm20a/cpuapp
-          - nanoBoard/nrf5340/cpuapp
+        profile:
+          - debug
+          - release
     container:
-      image: nordicplayground/nrfconnect-sdk:main
+      image: nordicplayground/nrfconnect-sdk:v2.6.0
+      options: --user root
+
     steps:
       - uses: actions/checkout@v4
         with:
@@ -31,36 +32,44 @@ jobs:
         working-directory: openMatterSmartLock
         run: |
           west init -l firmware
-          west update --narrow
+          west update --narrow -o=--depth=1
 
-      - name: Build firmware
+      - name: Resolve profile flags
+        id: prof
+        run: |
+          if [ "${{ matrix.profile }}" = "release" ]; then
+            echo "extra=-DCONF_FILE=prj_release.conf -DEXTRA_CONF_FILE=boards/nanoBoard.conf -DDTC_OVERLAY_FILE=boards/nanoBoard.overlay" >> "$GITHUB_OUTPUT"
+          else
+            echo "extra=-DEXTRA_CONF_FILE=boards/nanoBoard.conf -DDTC_OVERLAY_FILE=boards/nanoBoard.overlay" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Build firmware (${{ matrix.profile }}, nanoBoard / nRF52840)
         working-directory: openMatterSmartLock
         run: |
-          west build -b "${{ matrix.board }}" -p auto firmware --sysbuild
+          west build \
+            --board nrf52840dk/nrf52840 \
+            --sysbuild \
+            --pristine \
+            firmware \
+            -- ${{ steps.prof.outputs.extra }}
 
-      - name: Upload build artifacts
+      - name: Report size
         if: always()
+        working-directory: openMatterSmartLock
+        run: |
+          if [ -f build/zephyr/zephyr.elf ]; then
+            arm-zephyr-eabi-size build/zephyr/zephyr.elf || true
+          fi
+
+      - name: Upload artifacts
+        if: success()
         uses: actions/upload-artifact@v4
         with:
-          name: omsl-${{ matrix.board }}
-          path: openMatterSmartLock/build/**/zephyr.hex
-          if-no-files-found: ignore
-
-  unit-tests:
-    runs-on: ubuntu-latest
-    container:
-      image: nordicplayground/nrfconnect-sdk:main
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          path: openMatterSmartLock
-
-      - name: Initialize west workspace
-        working-directory: openMatterSmartLock
-        run: |
-          west init -l firmware
-          west update --narrow
-
-      - name: Run ztest unit tests on native_sim
-        working-directory: openMatterSmartLock
-        run: ./scripts/run_tests.sh
+          name: omsl-nanoBoard-${{ matrix.profile }}
+          path: |
+            openMatterSmartLock/build/zephyr/zephyr.hex
+            openMatterSmartLock/build/zephyr/zephyr.elf
+            openMatterSmartLock/build/zephyr/zephyr.map
+            openMatterSmartLock/build/merged.hex
+          if-no-files-found: warn
+          retention-days: 14

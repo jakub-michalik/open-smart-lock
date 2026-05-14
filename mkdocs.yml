@@ -1,0 +1,98 @@
+site_name: openMatterSmartLock
+site_description: Open, hardware-independent Matter Door Lock firmware reference
+site_url: https://jakub-michalik.github.io/open-smart-lock/
+repo_url: https://github.com/jakub-michalik/open-smart-lock
+repo_name: jakub-michalik/open-smart-lock
+edit_uri: edit/main/docs/
+
+theme:
+  name: material
+  language: en
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.indexes
+    - navigation.top
+    - navigation.footer
+    - toc.follow
+    - content.code.copy
+    - content.code.annotate
+    - content.action.edit
+    - content.tabs.link
+    - search.suggest
+    - search.highlight
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+  icon:
+    repo: fontawesome/brands/github
+    edit: material/pencil
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - tables
+  - toc:
+      permalink: true
+      toc_depth: 3
+  - pymdownx.details
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+
+plugins:
+  - search
+  - awesome-pages
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/jakub-michalik/open-smart-lock
+
+nav:
+  - Home: index.md
+  - Architecture:
+      - Overview: architecture/overview.md
+      - Memory Model: architecture/memory-model.md
+      - HAL Refactor RFC: architecture/hal-refactor-rfc.md
+  - Guides:
+      - Getting Started: guides/getting-started.md
+      - Porting: guides/porting.md
+      - Power Budget: guides/power-budget.md
+      - Security Model: guides/security-model.md
+  - Operations:
+      - OTA Updates: operations/ota.md
+  - Reference:
+      - HAL Interfaces: reference/hal.md
+      - Build Profiles: reference/build-profiles.md
+      - Partition Layout: reference/partitions.md

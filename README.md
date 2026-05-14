@@ -1,5 +1,9 @@
 # openMatterSmartLock
 
+[![build](https://github.com/jakub-michalik/open-smart-lock/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/jakub-michalik/open-smart-lock/actions/workflows/build.yml)
+[![tests](https://github.com/jakub-michalik/open-smart-lock/actions/workflows/tests.yml/badge.svg?branch=main)](https://github.com/jakub-michalik/open-smart-lock/actions/workflows/tests.yml)
+[![docs](https://github.com/jakub-michalik/open-smart-lock/actions/workflows/docs.yml/badge.svg?branch=main)](https://jakub-michalik.github.io/open-smart-lock/)
+
 > **An open, hardware-independent Matter Door Lock reference implementation.**
 > Built on Zephyr, the nRF Connect SDK, and the ConnectedHomeIP (Matter) stack.
 > Designed from day one with a clean layered architecture and explicit hardware abstraction interfaces.

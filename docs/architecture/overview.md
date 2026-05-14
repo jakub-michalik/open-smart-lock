@@ -200,7 +200,7 @@ Custom devicetree bindings (e.g., for the servo actuator binding) live in `firmw
 
 - **New actuator** → add a driver under `firmware/drivers/actuator/<name>/`, implement `actuator.h`, expose via Kconfig.
 - **New feedback sensor** → same pattern under `firmware/drivers/feedback/<name>/`.
-- **New board** → add `firmware/boards/<board>.overlay` and `<board>.conf`, plus `pm_static_<board>.yml` if partitioning is needed. See [PORTING.md](PORTING.md).
+- **New board** → add `firmware/boards/<board>.overlay` and `<board>.conf`, plus `pm_static_<board>.yml` if partitioning is needed. See [the porting guide](../guides/porting.md).
 - **New companion app** → openMatterSmartLock does not ship a companion app of its own; commissioning works in any standard Matter commissioner. Downstream products that want a branded or feature-specific companion app are expected to host it in a separate repository.
 
 ## 12. Key architectural decisions (ADR-style summary)
@@ -232,7 +232,7 @@ The protocol surface is pure Matter Door Lock. The device commissions and behave
 
 ## 14. Memory model (summary)
 
-See [`docs/memory-model.md`](docs/memory-model.md) for the full document.
+See [the memory model document](memory-model.md) for the full document.
 The condensed rules:
 
 - Static allocation by default; module singletons in `.bss`.
